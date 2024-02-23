@@ -12,7 +12,7 @@ import (
 )
 
 func ConnectDB() (*sql.DB, error) {
-	db, err := sql.Open("sqlite3", "socialface.db")
+	db, err := sql.Open("sqlite3", "./backend/pkg/db/socialface.db")
 	if err != nil {
 		return nil, fmt.Errorf("failed to open database: %v", err)
 	}
