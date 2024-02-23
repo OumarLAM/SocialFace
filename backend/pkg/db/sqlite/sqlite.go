@@ -31,7 +31,7 @@ func MigrateDB(db *sql.DB) error {
 	}
 
 	m, err := migrate.NewWithDatabaseInstance(
-		"file:///home/oulam/Desktop/SocialFace/backend/pkg/db/migrations/sqlite",
+		"file://backend/pkg/db/migrations/sqlite",
 		"sqlite3", driver)
 
 	if err != nil {
