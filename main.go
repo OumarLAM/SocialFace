@@ -2,22 +2,33 @@ package main
 
 import (
 	"log"
-	"github.com/gin-gonic/gin"
-	"github.com/OumarLAM/SocialFace/config"
-	"github.com/OumarLAM/SocialFace/migrations"
+	"net/http"
+
+	"github.com/OumarLAM/SocialFace/backend/pkg/db/sqlite"
 )
 
 func main() {
-	_, err := config.InitializeDB()
+	// Connect to the database
+	db, err := sqlite.ConnectDB()
 	if err != nil {
-		log.Println("Driver creation failed: ", err.Error())
-	} else {
-		// Run all migrations
-		migrations.Run()
+		log.Fatalf("failed to connect to database: %v", err)
+	}
+	defer db.Close()
 
-		router := gin.Default()
+	// Apply migrations
+	if err := sqlite.MigrateDB(db); err != nil {
+		log.Fatalf("failed to apply migrations: %v", err)
+	}
 
-		router.Run(":8000")
-		log.Println("Server started on port 8000")
+	// Set up your routes
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("Hello, world!"))
+	})
+
+	// Start the server
+	log.Println("Starting server on :8080")
+	err = http.ListenAndServe(":8080", nil)
+	if err != nil {
+		log.Fatalf("failed to start server: %v", err)
 	}
 }
