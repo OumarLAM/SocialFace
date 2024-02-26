@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"os"
+	"path/filepath"
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/sqlite3"
@@ -12,11 +14,24 @@ import (
 )
 
 func ConnectDB() (*sql.DB, error) {
+	// Get the absolute path to the migrations directory
+	absPath, err := filepath.Abs("./backend/pkg/db/migrations/sqlite")
+	if err != nil {
+		return nil, fmt.Errorf("failed to get absolute path: %v", err)
+	}
+
+	// Check if the migrations directory exists
+	if _, err := os.Stat(absPath); os.IsNotExist(err) {
+		return nil, fmt.Errorf("migrations directory does not exist: %v", err)
+	}
+
+	// Open the sqlite database
 	db, err := sql.Open("sqlite3", "./backend/pkg/db/socialface.db")
 	if err != nil {
 		return nil, fmt.Errorf("failed to open database: %v", err)
 	}
 
+	// Ping the database to verify the connection
 	if err := db.Ping(); err != nil {
 		return nil, fmt.Errorf("failed to connect to database: %v", err)
 	}
@@ -30,8 +45,15 @@ func MigrateDB(db *sql.DB) error {
 		return fmt.Errorf("failed to create migration driver: %v", err)
 	}
 
+	// Get the absolute path to the migrations directory
+	absPath, err := filepath.Abs("./backend/pkg/db/migrations/sqlite")
+	if err != nil {
+		return fmt.Errorf("failed to get absolute path: %v", err)
+	}
+
+	// Run migrations
 	m, err := migrate.NewWithDatabaseInstance(
-		"file://backend/pkg/db/migrations/sqlite",
+		"file://"+absPath,
 		"sqlite3", driver)
 
 	if err != nil {
