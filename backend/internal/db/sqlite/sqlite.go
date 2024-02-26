@@ -15,7 +15,7 @@ import (
 
 func ConnectDB() (*sql.DB, error) {
 	// Get the absolute path to the migrations directory
-	absPath, err := filepath.Abs("./backend/pkg/db/migrations/sqlite")
+	absPath, err := filepath.Abs("../../internal/db/migrations/sqlite")
 	if err != nil {
 		return nil, fmt.Errorf("failed to get absolute path: %v", err)
 	}
@@ -26,7 +26,7 @@ func ConnectDB() (*sql.DB, error) {
 	}
 
 	// Open the sqlite database
-	db, err := sql.Open("sqlite3", "./backend/pkg/db/socialface.db")
+	db, err := sql.Open("sqlite3", "../../internal/db/socialface.db")
 	if err != nil {
 		return nil, fmt.Errorf("failed to open database: %v", err)
 	}
@@ -46,7 +46,7 @@ func MigrateDB(db *sql.DB) error {
 	}
 
 	// Get the absolute path to the migrations directory
-	absPath, err := filepath.Abs("./backend/pkg/db/migrations/sqlite")
+	absPath, err := filepath.Abs("../../internal/db/migrations/sqlite")
 	if err != nil {
 		return fmt.Errorf("failed to get absolute path: %v", err)
 	}

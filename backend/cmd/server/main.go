@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/OumarLAM/SocialFace/backend/pkg/db/sqlite"
+	"github.com/OumarLAM/SocialFace/internal/db/sqlite"
 )
 
 func main() {
