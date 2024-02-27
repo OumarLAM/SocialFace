@@ -3,15 +3,13 @@ package controllers
 import (
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"github.com/OumarLAM/SocialFace/internal/db/sqlite"
 	"github.com/OumarLAM/SocialFace/internal/models"
 	"github.com/google/uuid"
-	"github.com/gorilla/sessions"
 	"golang.org/x/crypto/bcrypt"
 )
-
-var store = sessions.NewCookieStore([]byte("your-secret-key"))
 
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	// Parse request body
@@ -80,15 +78,15 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	err = db.QueryRow(`SELECT * FROM User WHERE email =?`, loginCredentials.Email).Scan(
 		&user.UserId, &user.Email, &user.Password, &user.Firstname, &user.Lastname, &user.DateOfBirth, &user.AvatarImage, &user.Nickname, &user.AboutMe, &user.ProfileType)
 	if err != nil {
-        http.Error(w, "User not found", http.StatusUnauthorized)
-        return
-    }
+		http.Error(w, "User not found", http.StatusUnauthorized)
+		return
+	}
 
 	// Compare password
 	err = ComparePassword(user.Password, loginCredentials.Password)
 	if err != nil {
-	    http.Error(w, "Invalid password", http.StatusUnauthorized)
-	    return
+		http.Error(w, "Invalid password", http.StatusUnauthorized)
+		return
 	}
 
 	// Generate session token
@@ -101,12 +99,13 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Store session token in cookie
-	http.SetCookie(w, &http.Cookie{
+	cookie := http.Cookie{
 		Name:     "session_token",
 		Value:    sessionToken,
-		Path:     "/",
-		HttpOnly: true,
-	})
+		Expires:  time.Now().Add(24 * time.Hour),
+		HttpOnly: true, // Cookie cannot be accessed by javascript
+	}
+	http.SetCookie(w, &cookie)
 
 	// Respond with success message
 	w.WriteHeader(http.StatusOK)
@@ -115,16 +114,16 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	// Clear session token from cookie
-	// http.SetCookie(w, &http.Cookie{
-	//     Name:     "session_token",
-	//     Value:    "",
-	//     Path:     "/",
-	// 	MaxAge: -1,
-	// })
+	cookie := http.Cookie{
+		Name:    "session_token",
+		Value:   "",
+		Expires: time.Now().Add(-1 * time.Hour),
+	}
+	http.SetCookie(w, &cookie)
 
-	// // Respond with success message
-	// w.WriteHeader(http.StatusOK)
-	// json.NewEncoder(w).Encode(map[string]string{"message": "Logged out successfully"})
+	// Respond with success message
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"message": "Logged out successfully"})
 }
 
 func HashPassword(password string) (string, error) {
