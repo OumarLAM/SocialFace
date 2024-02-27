@@ -67,3 +67,27 @@ func MigrateDB(db *sql.DB) error {
 	log.Println("Migration completed successfully")
 	return nil
 }
+
+// Function to store session token in the database
+func StoreSessionToken(userId int, sessionToken string) error {
+	db, err := ConnectDB()
+    if err!= nil {
+        return fmt.Errorf("failed to connect to database: %v", err)
+    }
+    defer db.Close()
+
+    // Prepare sql statement
+	stmt, err := db.Prepare("UPDATE user SET session_token = ? WHERE user_id = ?")
+    if err!= nil {
+        return fmt.Errorf("failed to prepare statement: %v", err)
+    }
+    defer stmt.Close()
+
+    // Execute sql statement
+    _, err = stmt.Exec(sessionToken, userId)
+    if err!= nil {
+        return fmt.Errorf("failed to execute statement: %v", err)
+    }
+
+    return nil
+}
