@@ -113,6 +113,14 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func LogoutHandler(w http.ResponseWriter, r *http.Request) {
+	// Get the user ID from request context
+	userID := r.Context().Value("userID").(int)
+	
+	// Clear session token from the database
+	if err := sqlite.ClearSessionToken(userID); err != nil {
+		http.Error(w, "Failed to clear session token", http.StatusInternalServerError)
+		return
+	}
 	// Clear session token from cookie
 	cookie := http.Cookie{
 		Name:    "session_token",

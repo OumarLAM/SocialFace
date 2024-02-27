@@ -1,23 +1,28 @@
 package middlewares
 
-import "net/http"
+import (
+    "net/http"
 
-func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		// Check if user is authenticated
-		// If not, redirect to login page or return unauthorized repspo
-		// Otherwise, call next handler
-		// session, err := store.Get(r, "session")
-        // if err!= nil {
-        //     http.Redirect(w, r, "/login", http.StatusTemporaryRedirect)
-        //     return
-        // }
+    "github.com/OumarLAM/SocialFace/internal/db/sqlite"
+)
 
-        // if session.Values["authenticated"] == nil {
-        //     http.Redirect(w, r, "/login", http.StatusTemporaryRedirect)
-        //     return
-        // }
+func AuthMiddleware(next http.Handler) http.Handler {
+    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+        // Get session token from cookie
+        sessionCookie, err := r.Cookie("session_token")
+        if err != nil {
+            http.Error(w, "Unhauthorized", http.StatusUnauthorized)
+            return
+        }
+        sessionToken := sessionCookie.Value
 
-        next(w, r)
-	}
+        // Validate the session token against the database
+        if !sqlite.IsSessionTokenValid(sessionToken) {
+            http.Error(w, "Unhauthorized", http.StatusUnauthorized)
+            return
+        }
+
+        // If the token is valid, call the next handler
+        next.ServeHTTP(w, r)
+    })
 }

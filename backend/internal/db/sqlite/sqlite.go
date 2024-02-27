@@ -91,3 +91,36 @@ func StoreSessionToken(userId int, sessionToken string) error {
 
     return nil
 }
+
+func IsSessionTokenValid(sessionToken string) bool {
+	db, err := ConnectDB()
+	if err != nil {
+		fmt.Printf("Failed to connect to database: %v\n", err)
+		return false
+	}
+	defer db.Close()
+
+	var count int
+	err = db.QueryRow("SELECT COUNT(*) FROM user WHERE session_token = ? AND expiration > datetime('now')", sessionToken).Scan(&count)
+	if err != nil {
+		fmt.Printf("Failed to query database: %v\n", err)
+		return false
+	}
+
+	return count > 0
+}
+
+func ClearSessionToken(userId int) error {
+	db, err := ConnectDB()
+    if err!= nil {
+        return fmt.Errorf("failed to connect to database: %v", err)
+    }
+    defer db.Close()
+
+    _, err = db.Exec("UPDATE User SET session_token = '', session_expiration = '', WHERE user_id = ?", userId)
+    if err != nil {
+		return fmt.Errorf("failed to delete user session: %v", err)
+	}
+
+    return nil
+}

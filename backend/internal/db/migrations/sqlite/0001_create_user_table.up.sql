@@ -8,5 +8,7 @@ CREATE TABLE IF NOT EXISTS User (
     avatar_image TEXT,
     nickname TEXT,
     about_me TEXT,
-    profile_type TEXT NOT NULL
+    profile_type TEXT NOT NULL,
+    session_token TEXT,
+    session_expiration TEXT
 );
