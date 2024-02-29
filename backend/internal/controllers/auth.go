@@ -42,8 +42,8 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer db.Close()
 
-	_, err = db.Exec(`INSERT INTO User (email, password, firstname, lastname, date_of_birth, avatar_image, nickname, about_me, profile_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-		user.Email, user.Password, user.Firstname, user.Lastname, user.DateOfBirth, user.AvatarImage, user.Nickname, user.AboutMe, user.ProfileType)
+	_, err = db.Exec(`INSERT INTO User (email, password, firstname, lastname, date_of_birth, avatar_image, nickname, about_me, profile_type, session_token, session_expiration) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		user.Email, user.Password, user.Firstname, user.Lastname, user.DateOfBirth, user.AvatarImage, user.Nickname, user.AboutMe, user.ProfileType, user.SessionToken, user.SessionExpiration)
 	if err != nil {
 		http.Error(w, "Failed to save user to database", http.StatusInternalServerError)
 		return
@@ -76,10 +76,10 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	var user models.User
 	err = db.QueryRow(`SELECT * FROM User WHERE email =?`, loginCredentials.Email).Scan(
-		&user.UserId, &user.Email, &user.Password, &user.Firstname, &user.Lastname, &user.DateOfBirth, &user.AvatarImage, &user.Nickname, &user.AboutMe, &user.ProfileType)
-	if err != nil {
-		http.Error(w, "User not found", http.StatusUnauthorized)
-		return
+		&user.UserId, &user.Email, &user.Password, &user.Firstname, &user.Lastname, &user.DateOfBirth, &user.AvatarImage, &user.Nickname, &user.AboutMe, &user.ProfileType, &user.SessionToken, &user.SessionExpiration)
+		if err != nil {
+			http.Error(w, "User not found", http.StatusUnauthorized)
+			return
 	}
 
 	// Compare password

@@ -84,7 +84,7 @@ func StoreSessionToken(userId int, sessionToken string) error {
     defer stmt.Close()
 
     // Execute sql statement
-    _, err = stmt.Exec(sessionToken, userId)
+    _, err = stmt.Exec(userId, sessionToken)
     if err!= nil {
         return fmt.Errorf("failed to execute statement: %v", err)
     }
