@@ -42,8 +42,8 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer db.Close()
 
-	_, err = db.Exec(`INSERT INTO User (email, password, firstname, lastname, date_of_birth, avatar_image, nickname, about_me, profile_type, session_token, session_expiration) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-		user.Email, user.Password, user.Firstname, user.Lastname, user.DateOfBirth, user.AvatarImage, user.Nickname, user.AboutMe, user.ProfileType, user.SessionToken, user.SessionExpiration)
+	_, err = db.Exec(`INSERT INTO User (email, password, firstname, lastname, date_of_birth, avatar_image, nickname, about_me, profile_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		user.Email, user.Password, user.Firstname, user.Lastname, user.DateOfBirth, user.AvatarImage, user.Nickname, user.AboutMe, user.ProfileType)
 	if err != nil {
 		http.Error(w, "Failed to save user to database", http.StatusInternalServerError)
 		return
@@ -75,11 +75,11 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	var user models.User
-	err = db.QueryRow(`SELECT * FROM User WHERE email =?`, loginCredentials.Email).Scan(
-		&user.UserId, &user.Email, &user.Password, &user.Firstname, &user.Lastname, &user.DateOfBirth, &user.AvatarImage, &user.Nickname, &user.AboutMe, &user.ProfileType, &user.SessionToken, &user.SessionExpiration)
-		if err != nil {
-			http.Error(w, "User not found", http.StatusUnauthorized)
-			return
+	err = db.QueryRow(`SELECT user_id, email, password, firstname, lastname, date_of_birth, avatar_image, nickname, about_me, profile_type FROM User WHERE email =?`, loginCredentials.Email).Scan(
+		&user.UserId, &user.Email, &user.Password, &user.Firstname, &user.Lastname, &user.DateOfBirth, &user.AvatarImage, &user.Nickname, &user.AboutMe, &user.ProfileType)
+	if err != nil {
+		http.Error(w, "User not found", http.StatusUnauthorized)
+		return
 	}
 
 	// Compare password
@@ -98,6 +98,16 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Set session expiration time
+	sessionExpiration := time.Now().Add(24 * time.Hour)
+
+	// Update session expiration in the user table
+	_, err = db.Exec(`UPDATE User SET session_expiration = ? WHERE user_id = ?`, sessionExpiration, user.UserId)
+	if err != nil {
+		http.Error(w, "Failed to update session expiration", http.StatusInternalServerError)
+		return
+	}
+
 	// Store session token in cookie
 	cookie := http.Cookie{
 		Name:     "session_token",
@@ -113,21 +123,26 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func LogoutHandler(w http.ResponseWriter, r *http.Request) {
-	// Get the user ID from request context
-	userID := r.Context().Value("userID").(int)
-	
+	// Get the session token from cookie
+	cookie, err := r.Cookie("session_token")
+	if err != nil {
+		http.Error(w, "Session token not found", http.StatusBadRequest)
+		return
+	}
+	sessionToken := cookie.Value
+
 	// Clear session token from the database
-	if err := sqlite.ClearSessionToken(userID); err != nil {
+	if err := sqlite.ClearSessionToken(sessionToken); err != nil {
 		http.Error(w, "Failed to clear session token", http.StatusInternalServerError)
 		return
 	}
 	// Clear session token from cookie
-	cookie := http.Cookie{
+	cookie = &http.Cookie {
 		Name:    "session_token",
 		Value:   "",
 		Expires: time.Now().Add(-1 * time.Hour),
 	}
-	http.SetCookie(w, &cookie)
+	http.SetCookie(w, cookie)
 
 	// Respond with success message
 	w.WriteHeader(http.StatusOK)

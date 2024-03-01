@@ -71,21 +71,21 @@ func MigrateDB(db *sql.DB) error {
 // Function to store session token in the database
 func StoreSessionToken(userId int, sessionToken string) error {
 	db, err := ConnectDB()
-    if err!= nil {
+    if err != nil {
         return fmt.Errorf("failed to connect to database: %v", err)
     }
     defer db.Close()
 
     // Prepare sql statement
 	stmt, err := db.Prepare("UPDATE user SET session_token = ? WHERE user_id = ?")
-    if err!= nil {
+    if err != nil {
         return fmt.Errorf("failed to prepare statement: %v", err)
     }
     defer stmt.Close()
 
     // Execute sql statement
-    _, err = stmt.Exec(userId, sessionToken)
-    if err!= nil {
+    _, err = stmt.Exec(sessionToken, userId)
+    if err != nil {
         return fmt.Errorf("failed to execute statement: %v", err)
     }
 
@@ -110,14 +110,14 @@ func IsSessionTokenValid(sessionToken string) bool {
 	return count > 0
 }
 
-func ClearSessionToken(userId int) error {
+func ClearSessionToken(sessionToken string) error {
 	db, err := ConnectDB()
-    if err!= nil {
+    if err != nil {
         return fmt.Errorf("failed to connect to database: %v", err)
     }
     defer db.Close()
 
-    _, err = db.Exec("UPDATE User SET session_token = '', session_expiration = '', WHERE user_id = ?", userId)
+    _, err = db.Exec(`UPDATE User SET session_token = NULL, session_expiration = NULL WHERE session_token = ?`, sessionToken)
     if err != nil {
 		return fmt.Errorf("failed to delete user session: %v", err)
 	}
