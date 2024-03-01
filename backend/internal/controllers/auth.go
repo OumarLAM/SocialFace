@@ -60,8 +60,8 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	user.Password = hashedPassword
 
 	// Save user to database
-	_, err = db.Exec(`INSERT INTO User (email, password, firstname, lastname, date_of_birth, avatar_image, nickname, about_me, profile_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-		user.Email, user.Password, user.Firstname, user.Lastname, user.DateOfBirth, user.AvatarImage, user.Nickname, user.AboutMe, user.ProfileType)
+	_, err = db.Exec(`INSERT INTO User (email, password, firstname, lastname, date_of_birth, avatar_image, nickname, about_me, public_profile) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		user.Email, user.Password, user.Firstname, user.Lastname, user.DateOfBirth, user.AvatarImage, user.Nickname, user.AboutMe, user.PublicProfile)
 	if err != nil {
 		http.Error(w, "Failed to save user to database", http.StatusInternalServerError)
 		return
@@ -99,8 +99,8 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	var user models.User
-	err = db.QueryRow(`SELECT user_id, email, password, firstname, lastname, date_of_birth, avatar_image, nickname, about_me, profile_type FROM User WHERE email =?`, loginCredentials.Email).Scan(
-		&user.UserId, &user.Email, &user.Password, &user.Firstname, &user.Lastname, &user.DateOfBirth, &user.AvatarImage, &user.Nickname, &user.AboutMe, &user.ProfileType)
+	err = db.QueryRow(`SELECT user_id, email, password, firstname, lastname, date_of_birth, avatar_image, nickname, about_me, public_profile FROM User WHERE email =?`, loginCredentials.Email).Scan(
+		&user.UserId, &user.Email, &user.Password, &user.Firstname, &user.Lastname, &user.DateOfBirth, &user.AvatarImage, &user.Nickname, &user.AboutMe, &user.PublicProfile)
 	if err != nil {
 		http.Error(w, "User not found", http.StatusUnauthorized)
 		return
