@@ -4,7 +4,6 @@ import (
 	"log"
 	"net/http"
 
-	// "github.com/OumarLAM/SocialFace/internal/db/sqlite"
 	"github.com/OumarLAM/SocialFace/internal/controllers"
 	"github.com/OumarLAM/SocialFace/internal/db/sqlite"
 )
@@ -30,11 +29,7 @@ func main() {
 	router.HandleFunc("/login", controllers.LoginHandler)
 	router.HandleFunc("/logout", controllers.LogoutHandler)
 
-
 	// Start server
 	log.Println("Starting server on :8080")
 	http.ListenAndServe(":8080", router)
-	// if err != nil {
-	// 	log.Fatalf("failed to start server: %v", err)
-	// }
 }

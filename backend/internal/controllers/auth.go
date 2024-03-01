@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"net/http"
 	"time"
@@ -12,6 +13,12 @@ import (
 )
 
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
+	// Check if the request method is POST
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
 	// Parse request body
 	var user models.User
 	err := json.NewDecoder(r.Body).Decode(&user)
@@ -26,6 +33,24 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Check if user with provided email already exists
+	db, err := sqlite.ConnectDB()
+	if err != nil {
+		http.Error(w, "Failed to connect to database", http.StatusInternalServerError)
+        return
+	}
+	defer db.Close()
+
+	var existingUser models.User
+	err = db.QueryRow(`SELECT email FROM User WHERE email = ?`, user.Email).Scan(&existingUser.Email)
+	if err == nil {
+		http.Error(w, "User with this email already exists", http.StatusConflict)
+		return
+	} else if err != sql.ErrNoRows {
+		http.Error(w, "Failed to check for existing user", http.StatusInternalServerError)
+		return
+	}
+
 	// Hash password
 	hashedPassword, err := HashPassword(user.Password)
 	if err != nil {
@@ -35,13 +60,6 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	user.Password = hashedPassword
 
 	// Save user to database
-	db, err := sqlite.ConnectDB()
-	if err != nil {
-		http.Error(w, "Failed to connect to database", http.StatusInternalServerError)
-		return
-	}
-	defer db.Close()
-
 	_, err = db.Exec(`INSERT INTO User (email, password, firstname, lastname, date_of_birth, avatar_image, nickname, about_me, profile_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		user.Email, user.Password, user.Firstname, user.Lastname, user.DateOfBirth, user.AvatarImage, user.Nickname, user.AboutMe, user.ProfileType)
 	if err != nil {
@@ -55,6 +73,12 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
+	// Check if the request method is POST
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	
 	// Parse request body
 	var loginCredentials struct {
 		Email    string `json:"email"`
