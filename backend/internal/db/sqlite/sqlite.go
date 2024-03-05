@@ -92,22 +92,23 @@ func StoreSessionToken(userId int, sessionToken string) error {
     return nil
 }
 
-func IsSessionTokenValid(sessionToken string) bool {
+func IsSessionTokenValid(sessionToken string) (int, bool) {
 	db, err := ConnectDB()
 	if err != nil {
 		fmt.Printf("Failed to connect to database: %v\n", err)
-		return false
+		return 0, false
 	}
 	defer db.Close()
 
+	var userId int
 	var count int
-	err = db.QueryRow("SELECT COUNT(*) FROM user WHERE session_token = ? AND expiration > datetime('now')", sessionToken).Scan(&count)
+	err = db.QueryRow("SELECT user_id, COUNT(*) FROM user WHERE session_token = ? AND session_expiration > datetime('now')", sessionToken).Scan(&userId, &count)
 	if err != nil {
 		fmt.Printf("Failed to query database: %v\n", err)
-		return false
+		return 0, false
 	}
 
-	return count > 0
+	return userId, count > 0
 }
 
 func ClearSessionToken(sessionToken string) error {

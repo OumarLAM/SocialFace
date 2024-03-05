@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/OumarLAM/SocialFace/internal/models"
@@ -10,13 +11,18 @@ import (
 
 // ProfileInfoHandler retrieves user profile information based on the user ID.
 func ProfileInfoHandler(w http.ResponseWriter, r *http.Request) {
-	// Extract userID from session token stored in the cookie
-	userID, err := DecodeSessionToken(r)
-	if err != nil {
-		http.Error(w, "Failed to decode session token", http.StatusInternalServerError)
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-
+	
+	// Retrieve userID from the context
+	userID, ok := r.Context().Value("userID").(int)
+	if !ok {
+		http.Error(w, "User ID not found in context", http.StatusInternalServerError)
+        return
+	}
+	
 	// Fetch user profile information from the database based on the userID
 	user, err := models.GetUserByID(userID)
 	if err != nil {
@@ -68,14 +74,18 @@ func DecodeSessionToken(r *http.Request) (int, error) {
 		return 0, err
 	}
 
+	fmt.Println(cookie)
+
 	// Parse session token as UUID
 	sessionToken, err := uuid.Parse(cookie.Value)
+	fmt.Println(sessionToken)
 	if err != nil {
 		return 0, err
 	}
 
 	// Extract the userID from the session token
 	userID := int(sessionToken.ID())
+	fmt.Println(userID)
 
 	return userID, nil
 }

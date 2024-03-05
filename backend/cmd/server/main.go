@@ -6,6 +6,7 @@ import (
 
 	"github.com/OumarLAM/SocialFace/internal/controllers"
 	"github.com/OumarLAM/SocialFace/internal/db/sqlite"
+	"github.com/OumarLAM/SocialFace/internal/middlewares"
 )
 
 func main() {
@@ -30,8 +31,8 @@ func main() {
 	router.HandleFunc("/logout", controllers.LogoutHandler)
 
 	// Register profile endpoints
-    router.HandleFunc("/profile/info", controllers.ProfileInfoHandler)
-    router.HandleFunc("/profile/privacy", controllers.UpdateProfilePrivacyHandler)
+	router.HandleFunc("/profile/info", middlewares.AuthMiddleware(controllers.ProfileInfoHandler))
+	router.HandleFunc("/profile/privacy", middlewares.AuthMiddleware(controllers.UpdateProfilePrivacyHandler))
 
 	// Start server
 	log.Println("Starting server on :8080")
