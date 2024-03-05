@@ -22,6 +22,9 @@ func main() {
 		log.Fatalf("failed to apply migrations: %v", err)
 	}
 
+	// Start background goroutine to clear expired sessions
+	go sqlite.ClearExpiredSessions()
+
 	// Initialize router
 	router := http.NewServeMux()
 

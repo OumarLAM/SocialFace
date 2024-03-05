@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/sqlite3"
@@ -68,28 +69,27 @@ func MigrateDB(db *sql.DB) error {
 	return nil
 }
 
-// Function to store session token in the database
 func StoreSessionToken(userId int, sessionToken string) error {
 	db, err := ConnectDB()
-    if err != nil {
-        return fmt.Errorf("failed to connect to database: %v", err)
-    }
-    defer db.Close()
+	if err != nil {
+		return fmt.Errorf("failed to connect to database: %v", err)
+	}
+	defer db.Close()
 
-    // Prepare sql statement
+	// Prepare sql statement
 	stmt, err := db.Prepare("UPDATE user SET session_token = ? WHERE user_id = ?")
-    if err != nil {
-        return fmt.Errorf("failed to prepare statement: %v", err)
-    }
-    defer stmt.Close()
+	if err != nil {
+		return fmt.Errorf("failed to prepare statement: %v", err)
+	}
+	defer stmt.Close()
 
-    // Execute sql statement
-    _, err = stmt.Exec(sessionToken, userId)
-    if err != nil {
-        return fmt.Errorf("failed to execute statement: %v", err)
-    }
+	// Execute sql statement
+	_, err = stmt.Exec(sessionToken, userId)
+	if err != nil {
+		return fmt.Errorf("failed to execute statement: %v", err)
+	}
 
-    return nil
+	return nil
 }
 
 func IsSessionTokenValid(sessionToken string) (int, bool) {
@@ -113,15 +113,34 @@ func IsSessionTokenValid(sessionToken string) (int, bool) {
 
 func ClearSessionToken(sessionToken string) error {
 	db, err := ConnectDB()
-    if err != nil {
-        return fmt.Errorf("failed to connect to database: %v", err)
-    }
-    defer db.Close()
+	if err != nil {
+		return fmt.Errorf("failed to connect to database: %v", err)
+	}
+	defer db.Close()
 
-    _, err = db.Exec(`UPDATE User SET session_token = NULL, session_expiration = NULL WHERE session_token = ?`, sessionToken)
-    if err != nil {
+	_, err = db.Exec(`UPDATE User SET session_token = NULL, session_expiration = NULL WHERE session_token = ?`, sessionToken)
+	if err != nil {
 		return fmt.Errorf("failed to delete user session: %v", err)
 	}
 
-    return nil
+	return nil
+}
+
+func ClearExpiredSessions() {
+	db, err := ConnectDB()
+	if err != nil {
+		log.Printf("Failed to connect to database: %v\n", err)
+		return
+	}
+	defer db.Close()
+
+	// This function will run in the background, every hour checking for expired sessions in the database and clearing them
+	for {
+		time.Sleep(time.Hour)
+
+		_, err = db.Exec("UPDATE User SET session_token = NULL, session_expiration = NULL WHERE session_expiration < datetime('now')")
+		if err != nil {
+			log.Printf("Failed to delete expired sessions: %v\n", err)
+		}
+	}
 }
