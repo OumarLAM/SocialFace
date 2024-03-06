@@ -64,6 +64,66 @@ func UpdateProfilePrivacy(userID int, publicProfile bool) error {
 	return nil
 }
 
+func FetchFollowers(userID int) ([]User, error) {
+	db, err := sqlite.ConnectDB()
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	rows, err := db.Query("SELECT u.user_id, u.email, u.firstname, u.lastname FROM User u JOIN Follow f ON u.user_id = f.follower_id WHERE f.followee_id = ?", userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var followers []User
+	for rows.Next() {
+		var follower User
+		err := rows.Scan(&follower.UserId, &follower.Email, &follower.Firstname, &follower.Lastname)
+		if err != nil {
+			return nil, err
+		}
+		followers = append(followers, follower)
+	}
+
+	if err := rows.Err(); err != nil {
+        return nil, err
+    }
+
+	return followers, nil
+}
+
+func FetchFollowing(userID int) ([]User, error) {
+	db, err := sqlite.ConnectDB()
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	rows, err := db.Query("SELECT u.user_id, u.email, u.firstname, u.lastname FROM User u JOIN Follow f ON u.user_id = f.followee_id WHERE f.follower_id = ?", userID)
+    if err != nil {
+        return nil, err
+    }
+    defer rows.Close()
+
+	var following []User
+	for rows.Next() {
+		var followingUser User
+        err := rows.Scan(&followingUser.UserId, &followingUser.Email, &followingUser.Firstname, &followingUser.Lastname)
+        if err != nil {
+            return nil, err
+        }
+        following = append(following, followingUser)
+	}
+	if err := rows.Err(); err != nil {
+        return nil, err
+    }
+
+	return following, nil
+}
+
+
 // The omitempty tag in Go's JSON serialization indicates that
 // if a field has its zero value for its type (e.g., an empty string ""
 //  for a string type), the field will be omitted from the JSON output.

@@ -39,6 +39,8 @@ func main() {
 	router.HandleFunc("/activity/posts", middlewares.AuthMiddleware(controllers.FetchPostsHandler))
 	router.HandleFunc("/activity/comments", middlewares.AuthMiddleware(controllers.FetchCommentsHandler))
 	router.HandleFunc("/activity/likes", middlewares.AuthMiddleware(controllers.FetchLikesHandler))
+	router.HandleFunc("/activity/followers", middlewares.AuthMiddleware(controllers.FetchFollowersHandler))
+	router.HandleFunc("/activity/following", middlewares.AuthMiddleware(controllers.FetchFollowingHandler))
 
 	// Endpoints to create posts, comments and likes
 	router.HandleFunc("/user/like", middlewares.AuthMiddleware(controllers.LikePostHandler))
