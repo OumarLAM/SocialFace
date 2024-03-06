@@ -19,7 +19,7 @@ func GetPostsByUserID(userID int) ([]Post, error) {
 	defer db.Close()
 
 	var posts []Post
-	rows, err := db.Query("SELECT * FROM Post WHERE user_id = ?", userID)
+	rows, err := db.Query("SELECT post_id, content, created_at, privacy, image_gif FROM Post WHERE user_id = ?", userID)
 	if err != nil {
 		return nil, err
 	}
@@ -27,10 +27,14 @@ func GetPostsByUserID(userID int) ([]Post, error) {
 
 	for rows.Next() {
 		var post Post
-        if err = rows.Scan(&post.PostID, &post.UserID, &post.Content, &post.CreatedAt, &post.Privacy, &post.ImageGIF); err != nil {
+        if err = rows.Scan(&post.PostID, &post.Content, &post.CreatedAt, &post.Privacy, &post.ImageGIF); err != nil {
             return nil, err
         }
         posts = append(posts, post)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
 	}
 
 	return posts, nil

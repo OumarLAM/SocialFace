@@ -37,6 +37,8 @@ func main() {
 	router.HandleFunc("/profile/info", middlewares.AuthMiddleware(controllers.ProfileInfoHandler))
 	router.HandleFunc("/profile/privacy", middlewares.AuthMiddleware(controllers.UpdateProfilePrivacyHandler))
 	router.HandleFunc("/activity/posts", middlewares.AuthMiddleware(controllers.FetchPostsHandler))
+	router.HandleFunc("/activity/comments", middlewares.AuthMiddleware(controllers.FetchCommentsHandler))
+	router.HandleFunc("/activity/likes", middlewares.AuthMiddleware(controllers.FetchLikesHandler))
 
 	// Start server
 	log.Println("Starting server on :8080")
