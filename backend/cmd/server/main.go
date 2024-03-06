@@ -40,6 +40,10 @@ func main() {
 	router.HandleFunc("/activity/comments", middlewares.AuthMiddleware(controllers.FetchCommentsHandler))
 	router.HandleFunc("/activity/likes", middlewares.AuthMiddleware(controllers.FetchLikesHandler))
 
+	// Endpoints to create posts, comments and likes
+	router.HandleFunc("/user/like", middlewares.AuthMiddleware(controllers.LikePostHandler))
+	router.HandleFunc("/user/unlike", middlewares.AuthMiddleware(controllers.UnlikePostHandler))
+
 	// Start server
 	log.Println("Starting server on :8080")
 	http.ListenAndServe(":8080", router)
