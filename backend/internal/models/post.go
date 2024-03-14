@@ -2,13 +2,22 @@ package models
 
 import "github.com/OumarLAM/SocialFace/internal/db/sqlite"
 
+type PrivacyType int
+
+const (
+	DefaultPrivacy PrivacyType = iota
+	Public
+	Private
+	AlmostPrivate
+)
+
 type Post struct {
-	PostID    int    `json:"post_id"`
-	UserID    int    `json:"user_id"`
-	Content   string `json:"content"`
-	CreatedAt string `json:"created_at,omitempty"`
-	Privacy   string `json:"privacy"`
-	ImageGIF  string `json:"image_gif,omitempty"`
+	PostID    int         `json:"post_id"`
+	UserID    int         `json:"user_id"`
+	Content   string      `json:"content"`
+	CreatedAt string      `json:"created_at,omitempty"`
+	Privacy   PrivacyType `json:"privacy"`
+	ImageGIF  string      `json:"image_gif,omitempty"`
 }
 
 func GetPostsByUserID(userID int) ([]Post, error) {
@@ -27,10 +36,10 @@ func GetPostsByUserID(userID int) ([]Post, error) {
 
 	for rows.Next() {
 		var post Post
-        if err = rows.Scan(&post.PostID, &post.Content, &post.CreatedAt, &post.Privacy, &post.ImageGIF); err != nil {
-            return nil, err
-        }
-        posts = append(posts, post)
+		if err = rows.Scan(&post.PostID, &post.Content, &post.CreatedAt, &post.Privacy, &post.ImageGIF); err != nil {
+			return nil, err
+		}
+		posts = append(posts, post)
 	}
 
 	if err := rows.Err(); err != nil {
