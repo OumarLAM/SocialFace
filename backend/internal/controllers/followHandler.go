@@ -8,41 +8,46 @@ import (
 )
 
 func FollowUserHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+        return
+	}
+
 	userID, ok := r.Context().Value("userID").(int)
 	if !ok {
 		http.Error(w, "User ID not found in context", http.StatusInternalServerError)
 		return
 	}
 
-	// Parse request body to get the user ID to follow
+	// Parse request body to get the user ID of the user to follow
 	var followRequest struct {
-		UserID int `json:"user_id"`
+		FolloweeID int `json:"followee_id"`
 	}
 	err := json.NewDecoder(r.Body).Decode(&followRequest)
 	if err != nil {
-		http.Error(w, "Failed to decode request body to get user ID to follow", http.StatusBadRequest)
+		http.Error(w, "Failed to decode request body to get the user ID of the user to follow", http.StatusBadRequest)
 		return
 	}
 
 	// Check if the user is trying to follow themselves
-	if followRequest.UserID == userID {
+	if followRequest.FolloweeID == userID {
 		http.Error(w, "Cannot follow yourself", http.StatusBadRequest)
 		return
 	}
 
 	// Check if the user is already following the target user
-	isFollowing, err := sqlite.IsFollowing(userID, followRequest.UserID)
+	isFollowing, err := sqlite.IsFollowing(userID, followRequest.FolloweeID)
 	if err != nil {
-		http.Error(w, "Failed to check if the user is following", http.StatusInternalServerError)
+		http.Error(w, "Failed to check if the user is already following the target user", http.StatusInternalServerError)
 		return
 	}
-	if !isFollowing {
+	if isFollowing {
 		http.Error(w, "You are already following this user", http.StatusBadRequest)
 		return
 	}
 
 	// Follow the user
-	err = sqlite.FollowUser(userID, followRequest.UserID)
+	err = sqlite.FollowUser(userID, followRequest.FolloweeID)
 	if err != nil {
 		http.Error(w, "Failed to follow user", http.StatusInternalServerError)
 		return
@@ -54,6 +59,11 @@ func FollowUserHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func UnfollowUserHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+        return
+	}
+	
 	userID, ok := r.Context().Value("userID").(int)
 	if !ok {
 		http.Error(w, "User ID not found in context", http.StatusInternalServerError)
@@ -62,7 +72,7 @@ func UnfollowUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Parse request body to get the user ID to unfollow
 	var unfollowRequest struct {
-		UserID int `json:"user_id"`
+		FolloweeID int `json:"followee_id"`
 	}
 	err := json.NewDecoder(r.Body).Decode(&unfollowRequest)
 	if err != nil {
@@ -71,13 +81,13 @@ func UnfollowUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check if the user is trying to unfollow themselves
-	if unfollowRequest.UserID == userID {
+	if unfollowRequest.FolloweeID == userID {
 		http.Error(w, "Cannot unfollow yourself", http.StatusBadRequest)
 		return
 	}
 
 	// Check if the user is not following the target user
-	isfollowing, err := sqlite.IsFollowing(userID, unfollowRequest.UserID)
+	isfollowing, err := sqlite.IsFollowing(userID, unfollowRequest.FolloweeID)
 	if err != nil {
 		http.Error(w, "Failed to check if the user is following", http.StatusInternalServerError)
 		return
@@ -89,7 +99,7 @@ func UnfollowUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Unfollow the user
-	err = sqlite.UnfollowUser(userID, unfollowRequest.UserID)
+	err = sqlite.UnfollowUser(userID, unfollowRequest.FolloweeID)
 	if err != nil {
 		http.Error(w, "Failed to unfollow user", http.StatusInternalServerError)
 		return
