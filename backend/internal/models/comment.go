@@ -1,6 +1,10 @@
 package models
 
-import "github.com/OumarLAM/SocialFace/internal/db/sqlite"
+import (
+	"fmt"
+
+	"github.com/OumarLAM/SocialFace/internal/db/sqlite"
+)
 
 type Comment struct {
 	CommentID int    `json:"comment_id"`
@@ -9,6 +13,22 @@ type Comment struct {
 	Content   string `json:"content"`
 	CreatedAt string `json:"created_at,omitempty"`
 	ImageGIF  string `json:"image_gif,omitempty"`
+}
+
+func CreateComment(userID, postID int, comment Comment) error {
+	db, err := sqlite.ConnectDB()
+	if err != nil {
+		return fmt.Errorf("failed to connect to database: %v", err)
+	}
+	defer db.Close()
+
+	_, err = db.Exec("INSERT INTO Comment (user_id, post_id, content, image_gif) VALUES (?, ?, ?, ?)",
+		userID, postID, comment.Content, comment.ImageGIF)
+	if err != nil {
+		return fmt.Errorf("failed to insert comment into database: %v", err)
+	}
+
+	return nil
 }
 
 func GetCommentsByUserID(userID int) ([]Comment, error) {

@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/OumarLAM/SocialFace/internal/models"
-	"github.com/OumarLAM/SocialFace/internal/db/sqlite"
 )
 
 func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
@@ -36,7 +35,7 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create post in the database
-	err = sqlite.CreatePost(userID, post)
+	err = models.CreatePost(userID, post)
 	if err != nil {
 		http.Error(w, "Failed to create post", http.StatusInternalServerError)
 		return

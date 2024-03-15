@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/OumarLAM/SocialFace/internal/models"
-	"github.com/OumarLAM/SocialFace/internal/db/sqlite"
 )
 
 func CreateCommentHandler(w http.ResponseWriter, r *http.Request) {
@@ -26,13 +25,18 @@ func CreateCommentHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "User ID not found in context", http.StatusInternalServerError)
         return
 	}
-
-	if !sqlite.PostExists(comment.PostID) {
-		http.Error(w, "Post not found", http.StatusNotFound)
+	
+	postExists, err := models.PostExists(comment.PostID)
+	if err != nil {
+        http.Error(w, "Failed to check if post exists", http.StatusInternalServerError)
         return
-	}
+    }
+	if !postExists {
+        http.Error(w, "Post does not exists", http.StatusNotFound)
+        return
+    }
 
-	err = sqlite.CreateComment(userID, comment)
+	err = models.CreateComment(userID, comment.PostID, comment)
 	if err != nil {
         http.Error(w, "Failed to create comment", http.StatusInternalServerError)
         return

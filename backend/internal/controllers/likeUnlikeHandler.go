@@ -4,7 +4,7 @@ import (
     "encoding/json"
     "net/http"
 
-	"github.com/OumarLAM/SocialFace/internal/db/sqlite"
+	"github.com/OumarLAM/SocialFace/internal/models"
 )
 
 func LikePostHandler(w http.ResponseWriter, r *http.Request) {
@@ -25,7 +25,7 @@ func LikePostHandler(w http.ResponseWriter, r *http.Request) {
     }
 
 	// Like the post
-	err = sqlite.LikePost(userID, request.PostID)
+	err = models.LikePost(userID, request.PostID)
     if err != nil {
         http.Error(w, "Failed to like post", http.StatusInternalServerError)
         return
@@ -52,7 +52,7 @@ func UnlikePostHandler(w http.ResponseWriter, r *http.Request) {
     }
 
 	// Unlike the post
-	err = sqlite.UnlikePost(userID, request.PostID)
+	err = models.UnlikePost(userID, request.PostID)
     if err != nil {
         http.Error(w, "Failed to unlike post", http.StatusInternalServerError)
         return

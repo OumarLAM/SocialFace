@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/OumarLAM/SocialFace/internal/db/sqlite"
+	"github.com/OumarLAM/SocialFace/internal/models"
 )
 
 func FollowUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -36,7 +36,7 @@ func FollowUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check if the user is already following the target user
-	isFollowing, err := sqlite.IsFollowing(userID, followRequest.FolloweeID)
+	isFollowing, err := models.IsFollowing(userID, followRequest.FolloweeID)
 	if err != nil {
 		http.Error(w, "Failed to check if the user is already following the target user", http.StatusInternalServerError)
 		return
@@ -47,7 +47,7 @@ func FollowUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Follow the user
-	err = sqlite.FollowUser(userID, followRequest.FolloweeID)
+	err = models.FollowUser(userID, followRequest.FolloweeID)
 	if err != nil {
 		http.Error(w, "Failed to follow user", http.StatusInternalServerError)
 		return
@@ -87,7 +87,7 @@ func UnfollowUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check if the user is not following the target user
-	isfollowing, err := sqlite.IsFollowing(userID, unfollowRequest.FolloweeID)
+	isfollowing, err := models.IsFollowing(userID, unfollowRequest.FolloweeID)
 	if err != nil {
 		http.Error(w, "Failed to check if the user is following", http.StatusInternalServerError)
 		return
@@ -99,7 +99,7 @@ func UnfollowUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Unfollow the user
-	err = sqlite.UnfollowUser(userID, unfollowRequest.FolloweeID)
+	err = models.UnfollowUser(userID, unfollowRequest.FolloweeID)
 	if err != nil {
 		http.Error(w, "Failed to unfollow user", http.StatusInternalServerError)
 		return
@@ -140,7 +140,7 @@ func AcceptFollowRequestHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Accept the follow request
-	err = sqlite.AcceptFollowRequest(userID, acceptRequest.FollowerID)
+	err = models.AcceptFollowRequest(userID, acceptRequest.FollowerID)
 	if err != nil {
 		http.Error(w, "Failed to accept follow request", http.StatusInternalServerError)
 		return
@@ -169,7 +169,7 @@ func DeclineFollowRequestHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Decline the follow request
-	err = sqlite.DeclineFollowRequest(userID, declineRequest.FollowerID)
+	err = models.DeclineFollowRequest(userID, declineRequest.FollowerID)
 	if err != nil {
 		http.Error(w, "Failed to decline follow request", http.StatusInternalServerError)
 		return
