@@ -9,8 +9,7 @@ import (
 type PrivacyType int
 
 const (
-	DefaultPrivacy PrivacyType = iota
-	Public
+	Public PrivacyType = iota + 1
 	Private
 	AlmostPrivate
 )

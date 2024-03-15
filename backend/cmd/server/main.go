@@ -49,8 +49,8 @@ func main() {
 	router.HandleFunc("/user/unfollow", middlewares.AuthMiddleware(controllers.UnfollowUserHandler))
 
 	// Endpoints to create posts, comments and likes
-	router.HandleFunc("post/create", middlewares.AuthMiddleware(controllers.CreatePostHandler))
-	router.HandleFunc("post/comment", middlewares.AuthMiddleware(controllers.CreateCommentHandler))
+	router.HandleFunc("/post/create", middlewares.AuthMiddleware(controllers.CreatePostHandler))
+	router.HandleFunc("/post/comment", middlewares.AuthMiddleware(controllers.CreateCommentHandler))
 	router.HandleFunc("/user/like", middlewares.AuthMiddleware(controllers.LikePostHandler))
 	router.HandleFunc("/user/unlike", middlewares.AuthMiddleware(controllers.UnlikePostHandler))
 

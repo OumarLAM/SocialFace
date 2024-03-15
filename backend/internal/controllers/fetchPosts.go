@@ -14,7 +14,6 @@ func FetchPostsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Fetch posts from the database for the authenticated user
 	posts, err := models.GetPostsByUserID(userID)
 	if err != nil {
 		http.Error(w, "Failed to fetch posts", http.StatusInternalServerError)

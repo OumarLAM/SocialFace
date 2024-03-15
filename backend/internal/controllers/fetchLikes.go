@@ -14,7 +14,6 @@ func FetchLikesHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Fetch likes from the database for the authenticated user
 	likes, err := models.GetLikesByUserID(userID)
 	if err != nil {
 		http.Error(w, "Failed to fetch likes", http.StatusInternalServerError)

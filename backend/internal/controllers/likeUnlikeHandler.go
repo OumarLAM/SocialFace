@@ -24,7 +24,6 @@ func LikePostHandler(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-	// Like the post
 	err = models.LikePost(userID, request.PostID)
     if err != nil {
         http.Error(w, "Failed to like post", http.StatusInternalServerError)
@@ -51,7 +50,6 @@ func UnlikePostHandler(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-	// Unlike the post
 	err = models.UnlikePost(userID, request.PostID)
     if err != nil {
         http.Error(w, "Failed to unlike post", http.StatusInternalServerError)

@@ -14,7 +14,6 @@ func FetchCommentsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Fetch comments from the database for the authenticated user
 	comments, err := models.GetCommentsByUserID(userID)
 	if err != nil {
 		http.Error(w, "Failed to fetch comments", http.StatusInternalServerError)

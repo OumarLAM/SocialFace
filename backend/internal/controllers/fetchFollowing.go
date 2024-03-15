@@ -14,7 +14,6 @@ func FetchFollowingHandler(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    // Fetch users followed by the user
     followers, err := models.FetchFollowing(userID)
     if err != nil {
         http.Error(w, "Failed to fetch followers", http.StatusInternalServerError)

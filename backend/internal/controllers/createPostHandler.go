@@ -13,7 +13,6 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Parse request body
 	var post models.Post
 	err := json.NewDecoder(r.Body).Decode(&post)
 	if err != nil {
@@ -21,27 +20,28 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Validate input fields
-	if post.Content == "" || post.Privacy == models.DefaultPrivacy {
+	if post.Content == "" {
 		http.Error(w, "Missing required fields", http.StatusBadRequest)
 		return
 	}
 
-	// Get user ID from request context
+	if (post.Privacy != models.Public && post.Privacy != models.Private && post.Privacy != models.AlmostPrivate) {
+		http.Error(w, "Invalid privacy level", http.StatusBadRequest)
+        return
+	}
+
 	userID, ok := r.Context().Value("userID").(int)
 	if !ok {
 		http.Error(w, "User ID not found in context", http.StatusInternalServerError)
 		return
 	}
 
-	// Create post in the database
 	err = models.CreatePost(userID, post)
 	if err != nil {
 		http.Error(w, "Failed to create post", http.StatusInternalServerError)
 		return
 	}
 
-	// Respond with success message
 	w.WriteHeader(http.StatusCreated)
     json.NewEncoder(w).Encode(map[string]string{"message": "Post created successfully"})
 }
