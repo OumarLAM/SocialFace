@@ -10,7 +10,7 @@ import (
 func FollowUserHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-        return
+		return
 	}
 
 	userID, ok := r.Context().Value("userID").(int)
@@ -31,7 +31,13 @@ func FollowUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Check if the user is trying to follow themselves
 	if followRequest.FolloweeID == userID {
-		http.Error(w, "Cannot follow yourself", http.StatusBadRequest)
+		http.Error(w, "You can not follow yourself", http.StatusBadRequest)
+		return
+	}
+
+	// Check if the user to follow exists in the database
+	if !models.UserExists(followRequest.FolloweeID) {
+		http.Error(w, "User to follow does not exist", http.StatusBadRequest)
 		return
 	}
 
@@ -42,7 +48,7 @@ func FollowUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if isFollowing {
-		http.Error(w, "You are already following this user", http.StatusBadRequest)
+		http.Error(w, "You are already following this user", http.StatusConflict)
 		return
 	}
 
@@ -61,9 +67,9 @@ func FollowUserHandler(w http.ResponseWriter, r *http.Request) {
 func UnfollowUserHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-        return
+		return
 	}
-	
+
 	userID, ok := r.Context().Value("userID").(int)
 	if !ok {
 		http.Error(w, "User ID not found in context", http.StatusInternalServerError)

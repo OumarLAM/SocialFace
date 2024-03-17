@@ -1,6 +1,9 @@
 package models
 
 import (
+	"database/sql"
+	"fmt"
+
 	"github.com/OumarLAM/SocialFace/internal/db/sqlite"
 )
 
@@ -88,8 +91,8 @@ func FetchFollowers(userID int) ([]User, error) {
 	}
 
 	if err := rows.Err(); err != nil {
-        return nil, err
-    }
+		return nil, err
+	}
 
 	return followers, nil
 }
@@ -102,27 +105,44 @@ func FetchFollowing(userID int) ([]User, error) {
 	defer db.Close()
 
 	rows, err := db.Query("SELECT u.user_id, u.email, u.firstname, u.lastname FROM User u JOIN Follow f ON u.user_id = f.followee_id WHERE f.follower_id = ?", userID)
-    if err != nil {
-        return nil, err
-    }
-    defer rows.Close()
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
 
 	var following []User
 	for rows.Next() {
 		var followingUser User
-        err := rows.Scan(&followingUser.UserId, &followingUser.Email, &followingUser.Firstname, &followingUser.Lastname)
-        if err != nil {
-            return nil, err
-        }
-        following = append(following, followingUser)
+		err := rows.Scan(&followingUser.UserId, &followingUser.Email, &followingUser.Firstname, &followingUser.Lastname)
+		if err != nil {
+			return nil, err
+		}
+		following = append(following, followingUser)
 	}
 	if err := rows.Err(); err != nil {
-        return nil, err
-    }
+		return nil, err
+	}
 
 	return following, nil
 }
 
+func UserExists(userID int) bool {
+	db, err := sqlite.ConnectDB()
+	if err != nil {
+		fmt.Printf("Failed to connect to database: %v", err)
+		return false
+	}
+	defer db.Close()
+
+	var exists bool
+	err = db.QueryRow("SELECT EXISTS (SELECT 1 FROM User WHERE user_id = ?)", userID).Scan(&exists)
+	if err != nil && err != sql.ErrNoRows {
+		fmt.Printf("Failed to check if user exists: %v", err)
+		return false
+	}
+
+	return exists
+}
 
 // The omitempty tag in Go's JSON serialization indicates that
 // if a field has its zero value for its type (e.g., an empty string ""
