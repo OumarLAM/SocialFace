@@ -41,6 +41,56 @@ func UnfollowUser(followerID, followeeID int) error {
 	return nil
 }
 
+func SendFollowRequest(followerID, followeeID int) error {
+	// Check if the follow request already exists
+	exists, err := FollowRequestExists(followerID, followeeID)
+	if err != nil {
+		return fmt.Errorf("failed to check if the follow request already exists: %v", err)
+	}
+	if exists {
+		return fmt.Errorf("follow request already send")
+	}
+
+	// Create the follow request in the database
+	err = CreateFollowRequest(followerID, followeeID)
+	if err != nil {
+		return fmt.Errorf("failed to create follow request: %v", err)
+	}
+
+	return nil
+}
+
+func FollowRequestExists(followerID, followeeID int) (bool, error) {
+	db, err := sqlite.ConnectDB()
+	if err != nil {
+		return false, fmt.Errorf("failed to connect to database: %v", err)
+	}
+	defer db.Close()
+
+	var count int
+	err = db.QueryRow("SELECT COUNT(*) FROM FollowRequest WHERE follower_id = ? AND followee_id = ?", followerID, followeeID).Scan(&count)
+	if err != nil {
+		return false, fmt.Errorf("failed to query database: %v", err)
+	}
+
+	return count > 0, nil
+}
+
+func CreateFollowRequest(followerID, followeeID int) error {
+	db, err := sqlite.ConnectDB()
+	if err != nil {
+		return fmt.Errorf("failed to connect to database: %v", err)
+	}
+	defer db.Close()
+
+	_, err = db.Exec("INSERT INTO FollowRequest (follower_id, followee_id) VALUES (?, ?)", followerID, followeeID)
+	if err != nil {
+		return fmt.Errorf("failed to create follow request: %v", err)
+	}
+
+	return nil
+}
+
 func AcceptFollowRequest(userID, followerID int) error {
 	db, err := sqlite.ConnectDB()
 	if err != nil {

@@ -52,11 +52,26 @@ func FollowUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Follow the user
-	err = models.FollowUser(userID, followRequest.FolloweeID)
+	// Check if the user to follow has a public profile
+	followee, err := models.GetUserByID(followRequest.FolloweeID)
 	if err != nil {
-		http.Error(w, "Failed to follow user", http.StatusInternalServerError)
+		http.Error(w, "Failed to get user's profile information", http.StatusInternalServerError)
 		return
+	}
+
+	if followee.IsProfilePublic() {
+		// Follow the user directly if their profile is public
+		if err := models.FollowUser(userID, followRequest.FolloweeID); err != nil {
+			http.Error(w, "Failed to follow user", http.StatusInternalServerError)
+			return
+		}
+	} else {
+		// Send follow request if the user's profile is not public
+		err = models.SendFollowRequest(userID, followRequest.FolloweeID)
+		if err != nil {
+			http.Error(w, "Failed to send follow request", http.StatusInternalServerError)
+			return
+		}
 	}
 
 	// Respond with success message
