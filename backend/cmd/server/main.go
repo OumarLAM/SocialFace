@@ -47,6 +47,8 @@ func main() {
 	// Register endpoints for users to follow and unfollow other users
 	router.HandleFunc("/user/follow", middlewares.AuthMiddleware(controllers.FollowUserHandler))
 	router.HandleFunc("/user/unfollow", middlewares.AuthMiddleware(controllers.UnfollowUserHandler))
+	router.HandleFunc("/user/acceptFollow", middlewares.AuthMiddleware(controllers.AcceptFollowRequestHandler))
+	router.HandleFunc("/user/declineFollow", middlewares.AuthMiddleware(controllers.DeclineFollowRequestHandler))
 
 	// Endpoints to create posts, comments and likes
 	router.HandleFunc("/post/create", middlewares.AuthMiddleware(controllers.CreatePostHandler))

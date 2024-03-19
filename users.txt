@@ -1,5 +1,5 @@
 Email                   Password
 oulam@oulam.com         "12345678"
 kissy@kissy.com         "87654321"
-oulam2@oulam.com        "123456789" or "987654321" I forgot it lol
+oulam2@oulam.com        "123456789"
 adja@adja.com           "20242024"

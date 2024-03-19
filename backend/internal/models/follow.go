@@ -98,31 +98,46 @@ func AcceptFollowRequest(userID, followerID int) error {
 	}
 	defer db.Close()
 
-	_, err = db.Exec("INSERT INTO Follow (follower_id, followee_id) VALUES (?, ?)", followerID, userID)
+	// Start a transaction to ensure atomicity
+	tx, err := db.Begin()
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %v", err)
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+			return
+		}
+		err = tx.Commit()
+	}()
+
+	_, err = tx.Exec("INSERT INTO Follow (follower_id, followee_id) VALUES (?, ?)", followerID, userID)
 	if err != nil {
 		return fmt.Errorf("failed to accept follow request: %v", err)
+	}
+
+	_, err = tx.Exec("DELETE FROM FollowRequest WHERE follower_id = ? AND followee_id = ?", followerID, userID)
+	if err != nil {
+		return fmt.Errorf("failed to delete follow request: %v", err)
 	}
 
 	return nil
 }
 
 func DeclineFollowRequest(userID, followerID int) error {
-	following, err := IsFollowing(userID, followerID)
+	db, err := sqlite.ConnectDB()
 	if err != nil {
-		return fmt.Errorf("failed to check if the user is following: %v", err)
+		return fmt.Errorf("failed to connect to database: %v", err)
 	}
+	defer db.Close()
 
-	if !following {
-		return fmt.Errorf("user is not following the follower")
-	}
+	// Delete the corresponding record from the followeRequest table
+	_, err = db.Exec("DELETE FROM FollowRequest WHERE follower_id = ? AND followee_id = ?", followerID, userID)
+    if err != nil {
+        return fmt.Errorf("failed to delete follow request: %v", err)
+    }
 
-	// Unfollow the user (remov the follow relationship)
-	err = UnfollowUser(userID, followerID)
-	if err != nil {
-		return fmt.Errorf("failed to unfollow user: %v", err)
-	}
-
-	return nil
+    return nil
 }
 
 func IsFollowing(followerID, followeeID int) (bool, error) {

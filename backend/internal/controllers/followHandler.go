@@ -52,13 +52,13 @@ func FollowUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Check if the user to follow has a public profile
 	followee, err := models.GetUserByID(followRequest.FolloweeID)
 	if err != nil {
 		http.Error(w, "Failed to get user's profile information", http.StatusInternalServerError)
 		return
 	}
-
+	
+	// Check if the user to follow has a public profile
 	if followee.IsProfilePublic() {
 		// Follow the user directly if their profile is public
 		if err := models.FollowUser(userID, followRequest.FolloweeID); err != nil {
@@ -132,6 +132,11 @@ func UnfollowUserHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func AcceptFollowRequestHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+        http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+        return
+    }
+
 	userID, ok := r.Context().Value("userID").(int)
 	if !ok {
 		http.Error(w, "User ID not found in context", http.StatusInternalServerError)
@@ -160,6 +165,11 @@ func AcceptFollowRequestHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if !models.UserExists(acceptRequest.FollowerID) {
+		http.Error(w, "User to accept follow request does not exist", http.StatusBadRequest)
+		return
+	}
+
 	// Accept the follow request
 	err = models.AcceptFollowRequest(userID, acceptRequest.FollowerID)
 	if err != nil {
@@ -173,6 +183,11 @@ func AcceptFollowRequestHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeclineFollowRequestHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+        http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+        return
+    }
+
 	userID, ok := r.Context().Value("userID").(int)
 	if !ok {
 		http.Error(w, "User ID not found in context", http.StatusInternalServerError)
@@ -188,6 +203,12 @@ func DeclineFollowRequestHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to decode request body of the follower to decline", http.StatusBadRequest)
 		return
 	}
+
+	if !models.UserExists(declineRequest.FollowerID) {
+		http.Error(w, "User to decline follow request does not exist", http.StatusBadRequest)
+		return
+	}
+
 
 	// Decline the follow request
 	err = models.DeclineFollowRequest(userID, declineRequest.FollowerID)
