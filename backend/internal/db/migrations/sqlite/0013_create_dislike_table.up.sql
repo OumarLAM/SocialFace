@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS Dislike (
+    dislike_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    post_id INTEGER NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES User(user_id),
+    FOREIGN KEY (post_id) REFERENCES Post(post_id)
+);

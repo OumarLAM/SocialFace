@@ -143,7 +143,3 @@ func UserExists(userID int) bool {
 
 	return exists
 }
-
-// The omitempty tag in Go's JSON serialization indicates that
-// if a field has its zero value for its type (e.g., an empty string ""
-//  for a string type), the field will be omitted from the JSON output.

@@ -54,7 +54,7 @@ func main() {
 	router.HandleFunc("/post/create", middlewares.AuthMiddleware(controllers.CreatePostHandler))
 	router.HandleFunc("/post/comment", middlewares.AuthMiddleware(controllers.CreateCommentHandler))
 	router.HandleFunc("/user/like", middlewares.AuthMiddleware(controllers.LikePostHandler))
-	router.HandleFunc("/user/unlike", middlewares.AuthMiddleware(controllers.UnlikePostHandler))
+	router.HandleFunc("/user/dislike", middlewares.AuthMiddleware(controllers.DislikePostHandler))
 
 	// Start server
 	log.Println("Starting server on :8080")
