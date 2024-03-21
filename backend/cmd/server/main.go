@@ -56,6 +56,17 @@ func main() {
 	router.HandleFunc("/user/like", middlewares.AuthMiddleware(controllers.LikePostHandler))
 	router.HandleFunc("/user/dislike", middlewares.AuthMiddleware(controllers.DislikePostHandler))
 
+	// Endpoints to create groups
+	router.HandleFunc("/group/create", middlewares.AuthMiddleware(controllers.CreateGroupHandler))
+    // router.HandleFunc("/group/join", middlewares.AuthMiddleware(controllers.JoinGroupHandler))
+    // router.HandleFunc("/group/leave", middlewares.AuthMiddleware(controllers.LeaveGroupHandler))
+    // router.HandleFunc("/group/invite", middlewares.AuthMiddleware(controllers.InviteUserToGroupHandler))
+    // router.HandleFunc("/group/acceptInvite", middlewares.AuthMiddleware(controllers.AcceptGroupInviteHandler))
+    // router.HandleFunc("/group/declineInvite", middlewares.AuthMiddleware(controllers.DeclineGroupInviteHandler))
+
+    // // Endpoints to manage groups
+    // router.HandleFunc("/group/info", middlewares.AuthMiddleware(controllers.FetchGroupInfoHandler))
+    // router.HandleFunc("/group/members", middlewares.AuthMiddleware(controllers.FetchGroupMembersHandler))
 	// Start server
 	log.Println("Starting server on :8080")
 	http.ListenAndServe(":8080", router)
