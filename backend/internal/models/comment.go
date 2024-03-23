@@ -59,3 +59,31 @@ func GetCommentsByUserID(userID int) ([]Comment, error) {
 
 	return comments, nil
 }
+
+func GetCommentsForPost(postID int) ([]Comment, error) {
+	db, err := sqlite.ConnectDB()
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to database: %v", err)
+	}
+	defer db.Close()
+
+	rows, err := db.Query("SELECT comment_id, post_id, user_id, content, created_at, image_gif FROM Comment WHERE post_id = ?", postID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query database: %v", err)
+	}
+	defer rows.Close()
+
+	var comments []Comment
+	for rows.Next() {
+		var comment Comment
+        if err := rows.Scan(&comment.CommentID, &comment.PostID, &comment.UserID, &comment.Content, &comment.CreatedAt, &comment.ImageGIF); err != nil {
+            return nil, fmt.Errorf("failed to scan comment row: %v", err)
+        }
+        comments = append(comments, comment)
+	}
+	if err := rows.Err(); err != nil {
+        return nil, fmt.Errorf("failed iterating over comment rows: %v", err)
+    }
+
+	return comments, nil
+}

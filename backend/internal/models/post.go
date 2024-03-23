@@ -83,3 +83,31 @@ func GetPostsByUserID(userID int) ([]Post, error) {
 
 	return posts, nil
 }
+
+func GetPostForGroup(groupID int) ([]Post, error) {
+	db, err := sqlite.ConnectDB()
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to database: %v", err)
+	}
+	defer db.Close()
+
+	rows, err := db.Query("SELECT post_id, user_id, content, created_at, image_gif FROM Post WHERE group_id = ?", groupID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query database: %v", err)
+	}
+	defer rows.Close()
+
+	var posts []Post
+	for rows.Next() {
+		var post Post
+        if err := rows.Scan(&post.PostID, &post.UserID, &post.Content, &post.CreatedAt, &post.ImageGIF); err != nil {
+            return nil, fmt.Errorf("failed to scan post for row: %v", err)
+        }
+        posts = append(posts, post)
+	}
+	if err := rows.Err(); err != nil {
+        return nil, fmt.Errorf("failed iterating over post rows: %v", err)
+    }
+
+	return posts, nil
+}

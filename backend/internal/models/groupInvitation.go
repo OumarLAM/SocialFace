@@ -16,6 +16,14 @@ type GroupInvitation struct {
 }
 
 func SendGroupInvitation(groupID, inviterID, inviteeID int) error {
+	isGroupMember, err := IsGroupMember(inviterID, groupID)
+	if err != nil {
+        return fmt.Errorf("failed to check group member")
+    }
+	if !isGroupMember {
+        return fmt.Errorf("you must be a member of the group to send invitation")
+    }
+
 	db, err := sqlite.ConnectDB()
 	if err != nil {
 		return fmt.Errorf("failed to connect to database: %v", err)

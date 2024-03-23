@@ -101,3 +101,37 @@ func IsGroupCreator(userID, groupID int) (bool, error) {
 
 	return userID == creatorID, nil
 }
+
+func RetrievePostsForGroup(userID, groupID int) ([]Post, error) {
+	isGroupMember, err := IsGroupMember(userID, groupID) 
+	if err != nil {
+		return nil, fmt.Errorf("failed to check group member: %v", err)
+	}
+	if !isGroupMember {
+		return nil, fmt.Errorf("you are not a member of this group")
+	}
+
+	posts, err := GetPostForGroup(groupID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve posts: %v", err)
+	}
+
+	return posts, nil
+}
+
+func RetrieveCommentsForPost(userID, postID, groupID int) ([]Comment, error) {
+	isGroupMember, err := IsGroupMember(userID, groupID) 
+    if err != nil {
+        return nil, fmt.Errorf("failed to check group member: %v", err)
+    }
+    if !isGroupMember {
+        return nil, fmt.Errorf("you are not a member of this group")
+    }
+
+    comments, err := GetCommentsForPost(postID)
+    if err != nil {
+        return nil, fmt.Errorf("failed to retrieve comments: %v", err)
+    }
+
+    return comments, nil
+}

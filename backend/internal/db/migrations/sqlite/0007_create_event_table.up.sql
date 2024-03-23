@@ -4,5 +4,6 @@ CREATE TABLE IF NOT EXISTS Event (
 	title TEXT NOT NULL,
 	description TEXT NOT NULL,
 	date_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	options TEXT NOT NULL,
 	FOREIGN KEY (group_id) REFERENCES UserGroup(group_id)
 );
