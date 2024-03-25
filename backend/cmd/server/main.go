@@ -66,6 +66,10 @@ func main() {
 	router.HandleFunc("/group/declineRequest", middlewares.AuthMiddleware(controllers.DeclineGroupRequestHandler))
 	router.HandleFunc("/group/leave", middlewares.AuthMiddleware(controllers.LeaveGroupHandler))
 
+	// Endpoints to retrieve group  posts and comments
+	router.HandleFunc("/group/posts", middlewares.AuthMiddleware(controllers.FetchGroupPostsHandler))
+	router.HandleFunc("/group/comments", middlewares.AuthMiddleware(controllers.FetchCommentsInGroupPostsHandler))
+
 	// Start server
 	log.Println("Starting server on :8080")
 	http.ListenAndServe(":8080", router)
