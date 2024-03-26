@@ -67,6 +67,7 @@ func main() {
 	router.HandleFunc("/group/leave", middlewares.AuthMiddleware(controllers.LeaveGroupHandler))
 
 	// Endpoints to retrieve group  posts and comments, and create events
+	// TODO: The following and the /group/leave handlers need to be tested with Postman
 	router.HandleFunc("/group/posts", middlewares.AuthMiddleware(controllers.FetchGroupPostsHandler))
 	router.HandleFunc("/group/comments", middlewares.AuthMiddleware(controllers.FetchCommentsInGroupPostsHandler))
 	router.HandleFunc("group/event", middlewares.AuthMiddleware(controllers.CreateEventHandler))
