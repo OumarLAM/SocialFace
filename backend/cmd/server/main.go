@@ -74,6 +74,6 @@ func main() {
 	router.HandleFunc("/group/respondToEvent", middlewares.AuthMiddleware(controllers.RespondToEventHandler))
 
 	// Start server
-	log.Println("Starting server on :8080")
-	http.ListenAndServe(":8080", router)
+	log.Println("Starting server on :3000")
+	http.ListenAndServe(":3000", router)
 }
