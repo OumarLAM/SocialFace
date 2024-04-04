@@ -36,8 +36,7 @@ Once the server runs successfully, you can now start the client in the second te
 
 ```bash
 cd client
-npm install
-npm start
+npm install && npm start
 ```
 
 The app will start automatically in http://localhost:3000
